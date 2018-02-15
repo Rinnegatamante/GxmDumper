@@ -22,35 +22,35 @@ static uint8_t buffer[CHUNK_SIZE];
 
 // Simplified generic hooking function
 void hookFunction(uint32_t nid, const void *func){
-	hooks[current_hook] = taiHookFunctionImport(&refs[current_hook],TAI_MAIN_MODULE,TAI_ANY_LIBRARY,nid,func);
-	current_hook++;
+    hooks[current_hook] = taiHookFunctionImport(&refs[current_hook],TAI_MAIN_MODULE,TAI_ANY_LIBRARY,nid,func);
+    current_hook++;
 }
 
 int tex_format_to_bytespp(SceGxmTextureFormat format){
-	switch (format & 0x9f000000U) {
-		case SCE_GXM_TEXTURE_BASE_FORMAT_U8:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_S8:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_P8:
-			return 1;
-		case SCE_GXM_TEXTURE_BASE_FORMAT_U4U4U4U4:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_U8U3U3U2:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_U1U5U5U5:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_U5U6U5:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_S5S5U6:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_U8U8:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_S8S8:
-			return 2;
-		case SCE_GXM_TEXTURE_BASE_FORMAT_U8U8U8:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_S8S8S8:
-			return 3;
-		case SCE_GXM_TEXTURE_BASE_FORMAT_U8U8U8U8:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_S8S8S8S8:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_F32:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_U32:
-		case SCE_GXM_TEXTURE_BASE_FORMAT_S32:
-		default:
-			return 4;
-	}
+    switch (format & 0x9f000000U) {
+        case SCE_GXM_TEXTURE_BASE_FORMAT_U8:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_S8:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_P8:
+            return 1;
+        case SCE_GXM_TEXTURE_BASE_FORMAT_U4U4U4U4:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_U8U3U3U2:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_U1U5U5U5:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_U5U6U5:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_S5S5U6:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_U8U8:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_S8S8:
+            return 2;
+        case SCE_GXM_TEXTURE_BASE_FORMAT_U8U8U8:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_S8S8S8:
+            return 3;
+        case SCE_GXM_TEXTURE_BASE_FORMAT_U8U8U8U8:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_S8S8S8S8:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_F32:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_U32:
+        case SCE_GXM_TEXTURE_BASE_FORMAT_S32:
+        default:
+            return 4;
+    }
 }
 
 static uint64_t fnv1a(const void *data, size_t size) {
@@ -68,12 +68,12 @@ static uint64_t fnv1a(const void *data, size_t size) {
 }
 
 int sceGxmSetFragmentTexture_patched(SceGxmContext *context, unsigned int textureIndex, const SceGxmTexture *texture){
-	
+    
     if (!DEBUG_DUMP_TEXTURES) return TAI_CONTINUE(int, refs[0], context, textureIndex, texture);
     
     // Getting texture bpp and stride
     uint32_t tex_format = sceGxmTextureGetFormat(texture);
-	uint8_t bpp = tex_format_to_bytespp(tex_format);
+    uint8_t bpp = tex_format_to_bytespp(tex_format);
     uint32_t width = sceGxmTextureGetWidth(texture);
     uint32_t height = sceGxmTextureGetHeight(texture);
     uint32_t stride = sceGxmTextureGetStride(texture);
@@ -97,36 +97,36 @@ int sceGxmSetFragmentTexture_patched(SceGxmContext *context, unsigned int textur
         kuIoOpen(fname, SCE_O_CREAT | SCE_O_WRONLY, &fd);
         
         // Writing Bitmap Header
-		memset(buffer, 0, 0x36);
-		*((uint16_t*)(&buffer[0x00])) = 0x4D42;
-		*((uint32_t*)(&buffer[0x02])) = ((width*height)<<2)+0x36;
-		*((uint32_t*)(&buffer[0x0A])) = 0x36;
-		*((uint32_t*)(&buffer[0x0E])) = 0x28;
-		*((uint32_t*)(&buffer[0x12])) = width;
-		*((uint32_t*)(&buffer[0x16])) = height;
-		*((uint32_t*)(&buffer[0x1A])) = 0x00200001;
-		*((uint32_t*)(&buffer[0x22])) = ((width*height)<<2);
+        memset(buffer, 0, 0x36);
+        *((uint16_t*)(&buffer[0x00])) = 0x4D42;
+        *((uint32_t*)(&buffer[0x02])) = ((width*height)<<2)+0x36;
+        *((uint32_t*)(&buffer[0x0A])) = 0x36;
+        *((uint32_t*)(&buffer[0x0E])) = 0x28;
+        *((uint32_t*)(&buffer[0x12])) = width;
+        *((uint32_t*)(&buffer[0x16])) = height;
+        *((uint32_t*)(&buffer[0x1A])) = 0x00200001;
+        *((uint32_t*)(&buffer[0x22])) = ((width*height)<<2);
         kuIoWrite(fd, buffer, 0x36);
         
         // Writing Bitmap Table
-		int x, y, i;
-		i = 0;
+        int x, y, i;
+        i = 0;
         uint32_t* tbuffer = (uint32_t*)buffer;
-		for (y = 1; y<=height; y++){
-			for (x = 0; x<width; x++){
-				uint8_t* clr = &ptr[x*bpp+(height-y)*stride];
-				uint8_t r = clr[0];
-				uint8_t g = clr[1];
-				uint8_t b = clr[2];
-				uint8_t a = (bpp == 3 ? 0xFF : clr[3]);
-				tbuffer[i] = (a<<24) | (r<<16) | (g<<8) | b;
-				i++;
-				if (i == (CHUNK_SIZE>>2)){
-					i = 0;
-					kuIoWrite(fd, buffer, CHUNK_SIZE);
-				}
-			}
-		}
+        for (y = 1; y<=height; y++){
+            for (x = 0; x<width; x++){
+                uint8_t* clr = &ptr[x*bpp+(height-y)*stride];
+                uint8_t r = clr[0];
+                uint8_t g = clr[1];
+                uint8_t b = clr[2];
+                uint8_t a = (bpp == 3 ? 0xFF : clr[3]);
+                tbuffer[i] = (a<<24) | (r<<16) | (g<<8) | b;
+                i++;
+                if (i == (CHUNK_SIZE>>2)){
+                    i = 0;
+                    kuIoWrite(fd, buffer, CHUNK_SIZE);
+                }
+            }
+        }
         if (i != 0) kuIoWrite(fd, buffer, i<<2);
         
         // Saving file
@@ -137,11 +137,11 @@ int sceGxmSetFragmentTexture_patched(SceGxmContext *context, unsigned int textur
     
     }
     
-	return TAI_CONTINUE(int, refs[0], context, textureIndex, texture);
+    return TAI_CONTINUE(int, refs[0], context, textureIndex, texture);
 }
 
 int sceGxmShaderPatcherRegisterProgram_patched(SceGxmShaderPatcher *shaderPatcher, const SceGxmProgram *programHeader, SceGxmShaderPatcherId *programId){
-	
+    
     int res = TAI_CONTINUE(int, refs[1], shaderPatcher, programHeader, programId);
     if (!DEBUG_DUMP_SHADERS) return res;
     
@@ -163,7 +163,7 @@ int sceGxmShaderPatcherRegisterProgram_patched(SceGxmShaderPatcher *shaderPatche
         kuIoOpen(fname, SCE_O_CREAT | SCE_O_WRONLY, &fd);
         
         // Writing gxp file
-		unsigned int i = 0;
+        unsigned int i = 0;
         uint8_t* ptr = (uint8_t*)programHeader;
         while (i < size){
             if (i + CHUNK_SIZE < size) kuIoWrite(fd, &ptr[i], CHUNK_SIZE);
@@ -179,12 +179,12 @@ int sceGxmShaderPatcherRegisterProgram_patched(SceGxmShaderPatcher *shaderPatche
     
     }
     
-	return res;
+    return res;
 }
 
 void _start() __attribute__ ((weak, alias ("module_start")));
 int module_start(SceSize argc, const void *args) {
-	
+    
     // Getting game Title ID
     sceAppMgrAppParamGetString(0, 12, titleid , 256);
     
@@ -202,19 +202,19 @@ int module_start(SceSize argc, const void *args) {
     sprintf(fname, "ux0:data/GxmDumper/%s/models", titleid);
     kuIoMkdir(fname);
     
-	// Hooking functions
-	hookFunction(0x29C34DF5, sceGxmSetFragmentTexture_patched);
-	hookFunction(0x2B528462, sceGxmShaderPatcherRegisterProgram_patched);
-	
-	return SCE_KERNEL_START_SUCCESS;
+    // Hooking functions
+    hookFunction(0x29C34DF5, sceGxmSetFragmentTexture_patched);
+    hookFunction(0x2B528462, sceGxmShaderPatcherRegisterProgram_patched);
+    
+    return SCE_KERNEL_START_SUCCESS;
 }
 
 int module_stop(SceSize argc, const void *args) {
-	
-	// Freeing hooks
-	while (current_hook-- > 0){
-		taiHookRelease(hooks[current_hook], refs[current_hook]);
-	}
-	
-	return SCE_KERNEL_STOP_SUCCESS;	
+    
+    // Freeing hooks
+    while (current_hook-- > 0){
+        taiHookRelease(hooks[current_hook], refs[current_hook]);
+    }
+    
+    return SCE_KERNEL_STOP_SUCCESS;    
 }

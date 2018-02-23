@@ -129,13 +129,13 @@ int sceGxmSetFragmentTexture_patched(SceGxmContext *context, unsigned int textur
         }
         if (i != 0) kuIoWrite(fd, buffer, i<<2);
         
-        // Saving file
-        kuIoClose(fd);
-        
         // Unlocking home button
         sceShellUtilUnlock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN | SCE_SHELL_UTIL_LOCK_TYPE_QUICK_MENU);
     
     }
+    
+    // Closing file
+    kuIoClose(fd);
     
     return TAI_CONTINUE(int, refs[0], context, textureIndex, texture);
 }
@@ -171,13 +171,13 @@ int sceGxmShaderPatcherRegisterProgram_patched(SceGxmShaderPatcher *shaderPatche
             i += CHUNK_SIZE;
         }
         
-        // Saving file
-        kuIoClose(fd);
-        
         // Unlocking home button
         sceShellUtilUnlock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN | SCE_SHELL_UTIL_LOCK_TYPE_QUICK_MENU);
     
     }
+    
+    // Closing file
+    kuIoClose(fd);
     
     return res;
 }
